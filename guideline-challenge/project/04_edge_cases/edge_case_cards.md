@@ -163,3 +163,21 @@ Common mistake: Box mặt lưng biển báo với state=unknown
 Diversity: negative
 
 ---
+
+CASE ID: EC14
+Sample: LISA01–LISA30 (cả clip, label bằng Track)
+Scene: Cùng giao lộ LISA01/LISA30, camera đứng yên, chạng vạng; 3 đầu đèn gần + 3 đầu đèn nhỏ ở giao lộ phía xa
+Observation: Hai đèn tròn gần đổi đỏ → xanh ở frame 15 (LISA16), không qua vàng. Mũi tên trái đỏ suốt clip. Đèn xa cột
+trái: frame 15 cả ô đỏ lẫn xanh đều tắt, frame 16 mới xanh. Hai đèn xa giữa: một đèn đổi xanh ở frame 15, một đèn đỏ mờ
+suốt clip
+Decision: 6 track; relevance cố định theo track; state đổi theo keyframe
+Expected: track mũi tên [other; red 0–29] · 2 track đèn tròn gần [ego; red 0–14, green 15–29] · track đèn xa trái
+[other; red 0–14, unknown 15, green 16–29] · track đèn xa giữa-trái [other; red 0–14, green 15–29] · track đèn xa
+giữa-phải [other; red 0–29] · frame [ego_signal=visible] ở mọi frame
+Rationale: Mục 8 (đề xuất): 1 đầu đèn = 1 track; frame chuyển tiếp không ô nào sáng → unknown; đèn xa trong clip là
+other chứ không IGNORE
+Common mistake: Tách một đèn thành hai track ở frame đổi màu; kéo màu xanh của frame 16 ngược về frame 15; gán đèn xa
+đang xanh làm ego
+Diversity: temporal · small_far · low_visibility · conflict
+
+---

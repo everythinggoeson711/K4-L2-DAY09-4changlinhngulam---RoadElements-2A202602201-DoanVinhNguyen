@@ -29,7 +29,7 @@ Mục đích: planner cần biết **màu của đèn điều khiển làn xe m�
 
 ## 2. Annotation unit
 
-- **Đơn vị:** 1 ảnh tĩnh. Frame LISA cũng làm như ảnh độc lập, dùng Shape, không dùng Track.
+- **Đơn vị:** 1 ảnh tĩnh (BDD), dùng Shape. Clip LISA 30 frame: dùng Track theo mục 8 (đề xuất, chờ nhóm chốt ở v2).
 - **1 instance = 1 đầu đèn (signal head)**, tức một vỏ chứa các ô đèn xếp dọc hoặc ngang.
   - Hai vỏ gắn cạnh nhau trên cùng giá là **2 instance**, kể cả khi một vỏ quay ngang và không được box.
   - Đầu đèn 5 ô (hình chữ L hoặc "doghouse") là **1 instance**.
@@ -148,8 +148,22 @@ Nguyên tắc:
 
 ## 8. Temporal rule
 
-Không áp dụng; đây là task ảnh tĩnh. Frame LISA được label độc lập, mỗi frame một trạng thái, không nối track.
-Attribute `state` để `mutable` chỉ nhằm tương thích nếu sau này chuyển sang video.
+**Ảnh tĩnh (BDD):** không áp dụng. Mỗi ảnh label độc lập bằng Shape.
+
+**Clip LISA 30 frame (đề xuất của Nguyên, chờ nhóm chốt ở v2):** label bằng **Track**, không dùng Shape.
+- **1 đầu đèn vật lý = 1 track** suốt chuỗi frame. `relevance` cố định cho cả track (immutable); `state` đổi theo frame.
+- **Keyframe** ở frame đầu, ở **mọi frame đổi `state`** (đặt state mới ngay tại frame đó) và ở frame cuối. Box lệch khỏi
+  đèn thì kéo lại, CVAT tự tạo keyframe.
+- **Frame chuyển tiếp:** nếu ở frame đó không ô nào sáng (ví dụ đỏ vừa tắt, xanh chưa lên) → `state=unknown` đúng một
+  frame đó, **không** kéo màu của frame trước/sau sang. Dùng frame lân cận để lấy ngữ cảnh, không để bịa state.
+- **Đèn ra khỏi khung hoặc bị che hẳn** trước frame cuối → bấm **O** (outside) ở frame đầu tiên mất đèn.
+- **Đèn nhỏ/xa của giao lộ sau:** trong clip vẫn box thành track riêng với `relevance=other` (không dùng rule 1/3 để
+  IGNORE), để model thấy được chu kỳ đèn phía xa nhưng không lấy nó làm tín hiệu cho ego. Rule 1/3 ở 5.3 vẫn giữ cho
+  ảnh tĩnh BDD.
+- Đèn chỉ thấy lõi sáng (vỏ lẫn vào nền cây lúc chạng vạng) → box lõi sáng như mục 3; lõi chuyển ô (đỏ trên → xanh
+  dưới) thì kéo box theo ở frame đổi state.
+- Tag `frame` vẫn gắn mỗi frame một cái. **Lưu ý export:** `CVAT for video 1.1` giữ track nhưng **bỏ mất tag `frame`**;
+  `CVAT for images 1.1` giữ tag nhưng tách track thành box rời. Nộp cả hai file.
 
 ## 9. Examples
 
